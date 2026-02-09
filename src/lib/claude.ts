@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { TROUBLESHOOT_SYSTEM_PROMPT, CYBERSECURITY_SYSTEM_PROMPT } from './prompts';
-import type { TroubleshootRequest, SecurityAssessRequest } from './types';
+import { CYBERSECURITY_SYSTEM_PROMPT } from './prompts';
+import type { SecurityAssessRequest } from './types';
 
 function getClient(): Anthropic {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -12,58 +12,6 @@ function getClient(): Anthropic {
 
 function getModelId(): string {
   return process.env.MODEL_ID || 'claude-haiku-4-5-20251001';
-}
-
-export async function streamTroubleshootResponse(
-  request: TroubleshootRequest
-): Promise<ReadableStream<Uint8Array>> {
-  const client = getClient();
-  const modelId = getModelId();
-
-  const userMessage = `Category: ${request.category}
-
-Issue Description:
-${request.description}
-
-Please provide structured troubleshooting guidance.`;
-
-  const stream = await client.messages.stream({
-    model: modelId,
-    max_tokens: 2048,
-    system: [
-      {
-        type: 'text',
-        text: TROUBLESHOOT_SYSTEM_PROMPT,
-        cache_control: { type: 'ephemeral' },
-      },
-    ],
-    messages: [
-      {
-        role: 'user',
-        content: userMessage,
-      },
-    ],
-  });
-
-  const encoder = new TextEncoder();
-
-  return new ReadableStream({
-    async start(controller) {
-      try {
-        for await (const event of stream) {
-          if (
-            event.type === 'content_block_delta' &&
-            event.delta.type === 'text_delta'
-          ) {
-            controller.enqueue(encoder.encode(event.delta.text));
-          }
-        }
-        controller.close();
-      } catch (error) {
-        controller.error(error);
-      }
-    },
-  });
 }
 
 export async function getSecurityAssessment(

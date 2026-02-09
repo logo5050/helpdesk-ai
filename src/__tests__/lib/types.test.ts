@@ -1,7 +1,6 @@
 import {
   getRiskLevelFromScore,
   getRiskColor,
-  CATEGORIES,
   SECURITY_FLAGS
 } from '@/lib/types';
 
@@ -38,21 +37,6 @@ describe('types', () => {
 
     it('returns rose color for HIGH risk', () => {
       expect(getRiskColor('HIGH')).toBe('#f43f5e');
-    });
-  });
-
-  describe('CATEGORIES', () => {
-    it('contains all 17 categories', () => {
-      expect(CATEGORIES).toHaveLength(17);
-    });
-
-    it('includes expected categories', () => {
-      expect(CATEGORIES).toContain('Password Reset / Account Lockout / SSPR');
-      expect(CATEGORIES).toContain('MFA / Authenticator / RSA SecurID');
-      expect(CATEGORIES).toContain('VPN / BIG-IP Edge Client');
-      expect(CATEGORIES).toContain('Microsoft 365 (Outlook, Teams, OneDrive, SharePoint)');
-      expect(CATEGORIES).toContain('Cybersecurity Concern');
-      expect(CATEGORIES).toContain('Other / General');
     });
   });
 

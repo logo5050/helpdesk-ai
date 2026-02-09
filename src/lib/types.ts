@@ -1,15 +1,3 @@
-export interface TroubleshootRequest {
-  category: string;
-  description: string;
-}
-
-export interface TroubleshootResponse {
-  reasonForCall: string;
-  troubleshootingSteps: string;
-  ticketNotes: string;
-  escalationCriteria: string;
-}
-
 export interface SecurityAssessRequest {
   flags: string[];
   additionalContext: string;
@@ -22,36 +10,6 @@ export interface SecurityAssessResponse {
   supervisorNotification: string;
   ticketDocumentation: string;
 }
-
-export interface SessionHistoryItem {
-  id: string;
-  category: string;
-  description: string;
-  timestamp: Date;
-  response?: string;
-}
-
-export const CATEGORIES = [
-  'Password Reset / Account Lockout / SSPR',
-  'MFA / Authenticator / RSA SecurID',
-  'VPN / BIG-IP Edge Client',
-  'SAP / SAP Fiori / SAP Work Manager',
-  'Microsoft 365 (Outlook, Teams, OneDrive, SharePoint)',
-  'Network / Internet / File Sharing',
-  'Hardware (Monitor, Printer, Docking Station)',
-  'Software Center / Install Issues',
-  'Mobile Device (iPhone, Android, Tablet)',
-  'CRS / Java Issues',
-  'Field Apps (GFEE, WorkStudio, VegWorker, FieldSmart, MDT)',
-  'MacOS Support',
-  'BitLocker / McAfee Recovery',
-  'Concur / Workday / SumTotal / UKG',
-  'VDI / Remote Desktop',
-  'Cybersecurity Concern',
-  'Other / General',
-] as const;
-
-export type Category = (typeof CATEGORIES)[number];
 
 export const SECURITY_FLAGS = [
   'Caller could not verify their full name',
