@@ -23,6 +23,14 @@ describe('CyberSecurityForm', () => {
     expect(screen.getByText('Caller is pressuring for immediate action / urgency')).toBeInTheDocument();
   });
 
+  it('renders grouped flag sections', () => {
+    render(<CyberSecurityForm {...defaultProps} />);
+
+    expect(screen.getByText('Identity Verification')).toBeInTheDocument();
+    expect(screen.getByText('Behavioral Red Flags')).toBeInTheDocument();
+    expect(screen.getByText('Request Anomalies')).toBeInTheDocument();
+  });
+
   it('renders additional context textarea', () => {
     render(<CyberSecurityForm {...defaultProps} />);
 
@@ -33,7 +41,7 @@ describe('CyberSecurityForm', () => {
   it('disables assess button when no flags are selected', () => {
     render(<CyberSecurityForm {...defaultProps} />);
 
-    const button = screen.getByRole('button', { name: /assess security risk/i });
+    const button = screen.getByRole('button', { name: /analyze threat/i });
     expect(button).toBeDisabled();
   });
 
@@ -45,14 +53,14 @@ describe('CyberSecurityForm', () => {
     const label = labelText.closest('label');
     fireEvent.click(label!);
 
-    const button = screen.getByRole('button', { name: /assess security risk/i });
+    const button = screen.getByRole('button', { name: /analyze threat/i });
     expect(button).not.toBeDisabled();
   });
 
   it('shows loading state on button', () => {
     render(<CyberSecurityForm {...defaultProps} loading={true} />);
 
-    expect(screen.getByText('Assessing Risk...')).toBeInTheDocument();
+    expect(screen.getByText('Analyzing Threat...')).toBeInTheDocument();
   });
 
   it('calls onAssess with selected flags when button is clicked', () => {
@@ -64,7 +72,7 @@ describe('CyberSecurityForm', () => {
     const label = labelText.closest('label');
     fireEvent.click(label!);
 
-    const button = screen.getByRole('button', { name: /assess security risk/i });
+    const button = screen.getByRole('button', { name: /analyze threat/i });
     fireEvent.click(button);
 
     expect(onAssess).toHaveBeenCalledTimes(1);
@@ -78,15 +86,28 @@ describe('CyberSecurityForm', () => {
     const onAssess = jest.fn();
     render(<CyberSecurityForm {...defaultProps} onAssess={onAssess} />);
 
-    const otherInput = screen.getByPlaceholderText(/describe any other concerning behavior/i);
+    const otherInput = screen.getByPlaceholderText(/describe any other suspicious behavior/i);
     fireEvent.change(otherInput, { target: { value: 'Custom concern' } });
 
-    const button = screen.getByRole('button', { name: /assess security risk/i });
+    const button = screen.getByRole('button', { name: /analyze threat/i });
     fireEvent.click(button);
 
     expect(onAssess).toHaveBeenCalledWith(
       ['Other: Custom concern'],
       ''
     );
+  });
+
+  it('shows selected count badge on button', () => {
+    render(<CyberSecurityForm {...defaultProps} />);
+
+    // Select two flags
+    const labelText1 = screen.getByText('Caller failed security questions');
+    fireEvent.click(labelText1.closest('label')!);
+
+    const labelText2 = screen.getByText('Caller refused to provide employee ID');
+    fireEvent.click(labelText2.closest('label')!);
+
+    expect(screen.getByText('2 selected')).toBeInTheDocument();
   });
 });

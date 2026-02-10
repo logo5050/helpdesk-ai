@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { RiskAssessment } from '@/components/RiskAssessment';
 
 describe('RiskAssessment', () => {
@@ -11,26 +11,34 @@ describe('RiskAssessment', () => {
     ticketDocumentation: 'SECURITY CONCERN DOCUMENTED\nRisk Level: MEDIUM',
   };
 
-  it('renders risk score and level', () => {
+  it('renders threat level heading', () => {
     render(<RiskAssessment {...defaultProps} />);
 
-    expect(screen.getByText('Risk Assessment')).toBeInTheDocument();
-    expect(screen.getByText('MEDIUM')).toBeInTheDocument();
-    // Check for score label - may appear multiple times
-    const scoreLabels = screen.getAllByText(/Score:/);
-    expect(scoreLabels.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('Threat Level')).toBeInTheDocument();
   });
 
-  it('renders LOW risk styling correctly', () => {
+  it('renders risk level badge with RISK suffix', () => {
+    render(<RiskAssessment {...defaultProps} />);
+
+    expect(screen.getByText('MEDIUM RISK')).toBeInTheDocument();
+  });
+
+  it('renders LOW risk level correctly', () => {
     render(<RiskAssessment {...defaultProps} riskScore={2} riskLevel="LOW" />);
 
-    expect(screen.getByText('LOW')).toBeInTheDocument();
+    expect(screen.getByText('LOW RISK')).toBeInTheDocument();
   });
 
-  it('renders HIGH risk styling correctly', () => {
+  it('renders HIGH risk level correctly', () => {
     render(<RiskAssessment {...defaultProps} riskScore={9} riskLevel="HIGH" />);
 
-    expect(screen.getByText('HIGH')).toBeInTheDocument();
+    expect(screen.getByText('HIGH RISK')).toBeInTheDocument();
+  });
+
+  it('renders threat analysis section', () => {
+    render(<RiskAssessment {...defaultProps} />);
+
+    expect(screen.getByText('Threat Analysis')).toBeInTheDocument();
   });
 
   it('renders assessment text', () => {
@@ -39,17 +47,17 @@ describe('RiskAssessment', () => {
     expect(screen.getByText(defaultProps.assessment)).toBeInTheDocument();
   });
 
-  it('renders supervisor notification section', () => {
+  it('renders supervisor alert section', () => {
     render(<RiskAssessment {...defaultProps} />);
 
-    expect(screen.getByText('SUPERVISOR NOTIFICATION')).toBeInTheDocument();
+    expect(screen.getByText('Supervisor Alert')).toBeInTheDocument();
     expect(screen.getByText(/SECURITY ALERT - MEDIUM/)).toBeInTheDocument();
   });
 
-  it('renders ticket documentation section', () => {
+  it('renders ticket notes section', () => {
     render(<RiskAssessment {...defaultProps} />);
 
-    expect(screen.getByText('TICKET DOCUMENTATION')).toBeInTheDocument();
+    expect(screen.getByText('Ticket Notes')).toBeInTheDocument();
     expect(screen.getByText(/SECURITY CONCERN DOCUMENTED/)).toBeInTheDocument();
   });
 
@@ -60,14 +68,27 @@ describe('RiskAssessment', () => {
     expect(copyButtons.length).toBe(2);
   });
 
-  it('renders score markers', () => {
+  it('renders score display with /10 indicator', async () => {
     render(<RiskAssessment {...defaultProps} />);
 
-    // Check for score markers by looking at the specific container or by counting
-    // Some numbers may appear multiple times (e.g., "5" in "5/10" and as a marker)
-    for (let i = 1; i <= 10; i++) {
-      const elements = screen.getAllByText(i.toString());
-      expect(elements.length).toBeGreaterThanOrEqual(1);
-    }
+    // The score animates, so we need to wait for final state
+    await waitFor(() => {
+      expect(screen.getByText('/10')).toBeInTheDocument();
+    });
+  });
+
+  it('renders risk bar scale labels', () => {
+    render(<RiskAssessment {...defaultProps} />);
+
+    expect(screen.getByText('Low')).toBeInTheDocument();
+    expect(screen.getByText('Critical')).toBeInTheDocument();
+  });
+
+  it('shows warning icon for HIGH risk level', () => {
+    const { container } = render(<RiskAssessment {...defaultProps} riskScore={8} riskLevel="HIGH" />);
+
+    // HIGH risk shows a warning triangle icon (SVG with the warning path)
+    const warningPath = container.querySelector('path[fill-rule="evenodd"]');
+    expect(warningPath).toBeInTheDocument();
   });
 });
