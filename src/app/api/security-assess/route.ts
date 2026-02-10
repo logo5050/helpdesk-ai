@@ -7,9 +7,9 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as SecurityAssessRequest;
 
-    if (!body.flags || body.flags.length === 0) {
+    if (!body.description || body.description.trim().length === 0) {
       return new Response(
-        JSON.stringify({ error: 'At least one security flag is required' }),
+        JSON.stringify({ error: 'Please describe the caller interaction' }),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -17,7 +17,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const rawResponse = await getSecurityAssessment(body);
+    const rawResponse = await getSecurityAssessment({
+      description: body.description.trim(),
+    });
     const parsed = parseSecurityResponse(rawResponse);
 
     return new Response(JSON.stringify(parsed), {

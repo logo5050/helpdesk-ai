@@ -1,7 +1,6 @@
 import {
   getRiskLevelFromScore,
   getRiskColor,
-  SECURITY_FLAGS
 } from '@/lib/types';
 
 describe('types', () => {
@@ -27,29 +26,16 @@ describe('types', () => {
   });
 
   describe('getRiskColor', () => {
-    it('returns emerald color for LOW risk', () => {
-      expect(getRiskColor('LOW')).toBe('#10b981');
+    it('returns green color for LOW risk', () => {
+      expect(getRiskColor('LOW')).toBe('#00E676');
     });
 
     it('returns amber color for MEDIUM risk', () => {
-      expect(getRiskColor('MEDIUM')).toBe('#f59e0b');
+      expect(getRiskColor('MEDIUM')).toBe('#FFB300');
     });
 
-    it('returns rose color for HIGH risk', () => {
-      expect(getRiskColor('HIGH')).toBe('#f43f5e');
-    });
-  });
-
-  describe('SECURITY_FLAGS', () => {
-    it('contains all 9 security flags', () => {
-      expect(SECURITY_FLAGS).toHaveLength(9);
-    });
-
-    it('includes expected flags', () => {
-      expect(SECURITY_FLAGS).toContain('Caller could not verify their full name');
-      expect(SECURITY_FLAGS).toContain('Caller failed security questions');
-      expect(SECURITY_FLAGS).toContain('Caller is requesting password reset for a VIP/admin account');
-      expect(SECURITY_FLAGS).toContain('Request involves disabling security features (MFA, etc.)');
+    it('returns red color for HIGH risk', () => {
+      expect(getRiskColor('HIGH')).toBe('#FF3D57');
     });
   });
 });

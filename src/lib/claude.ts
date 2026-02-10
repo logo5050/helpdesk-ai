@@ -20,17 +20,10 @@ export async function getSecurityAssessment(
   const client = getClient();
   const modelId = getModelId();
 
-  const flagsList = request.flags.length > 0
-    ? request.flags.map((flag) => `- ${flag}`).join('\n')
-    : '- No specific flags selected';
+  const userMessage = `Caller Interaction Description:
+${request.description}
 
-  const userMessage = `Security Flags Identified:
-${flagsList}
-
-Additional Context:
-${request.additionalContext || 'No additional context provided.'}
-
-Please assess the security risk and provide documentation.`;
+Please analyze this interaction for potential social engineering or security threats. Extract any red flags from the description and provide a comprehensive risk assessment with documentation.`;
 
   const response = await client.messages.create({
     model: modelId,

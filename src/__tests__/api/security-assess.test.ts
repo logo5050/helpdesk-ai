@@ -20,32 +20,32 @@ describe('POST /api/security-assess', () => {
     jest.clearAllMocks();
   });
 
-  it('returns 400 when flags array is empty', async () => {
+  it('returns 400 when description is missing', async () => {
     const request = new Request('http://localhost/api/security-assess', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ flags: [], additionalContext: '' }),
+      body: JSON.stringify({}),
     });
 
     const response = await POST(request);
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe('At least one security flag is required');
+    expect(data.error).toBe('Please describe the caller interaction');
   });
 
-  it('returns 400 when flags is missing', async () => {
+  it('returns 400 when description is empty', async () => {
     const request = new Request('http://localhost/api/security-assess', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ additionalContext: '' }),
+      body: JSON.stringify({ description: '   ' }),
     });
 
     const response = await POST(request);
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe('At least one security flag is required');
+    expect(data.error).toBe('Please describe the caller interaction');
   });
 
   it('returns parsed security assessment on success', async () => {
@@ -65,8 +65,7 @@ describe('POST /api/security-assess', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        flags: ['Caller failed security questions'],
-        additionalContext: 'Test context',
+        description: 'Caller was aggressive and refused to verify identity',
       }),
     });
 
@@ -76,8 +75,7 @@ describe('POST /api/security-assess', () => {
     expect(response.status).toBe(200);
     expect(data).toEqual(mockParsedResponse);
     expect(mockGetSecurityAssessment).toHaveBeenCalledWith({
-      flags: ['Caller failed security questions'],
-      additionalContext: 'Test context',
+      description: 'Caller was aggressive and refused to verify identity',
     });
     expect(mockParseSecurityResponse).toHaveBeenCalledWith(mockRawResponse);
   });
@@ -91,8 +89,7 @@ describe('POST /api/security-assess', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        flags: ['Test flag'],
-        additionalContext: '',
+        description: 'Test description',
       }),
     });
 
@@ -112,8 +109,7 @@ describe('POST /api/security-assess', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        flags: ['Test flag'],
-        additionalContext: '',
+        description: 'Test description',
       }),
     });
 
