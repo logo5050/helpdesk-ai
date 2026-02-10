@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { CopyButton } from '@/components/ui';
 import type { SecurityAssessResponse } from '@/lib/types';
+
+const MIN_CHARS = 50;
 
 // Clean up any residual markdown symbols from AI response
 function cleanMarkdown(text: string): string {
@@ -21,9 +23,28 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [assessment, setAssessment] = useState<SecurityAssessResponse | null>(null);
   const [description, setDescription] = useState('');
+  const [justMetThreshold, setJustMetThreshold] = useState(false);
+  const [previouslyUnderThreshold, setPreviouslyUnderThreshold] = useState(true);
+
+  const charCount = description.trim().length;
+  const meetsMinimum = charCount >= MIN_CHARS;
+  const canSubmit = meetsMinimum && !loading;
+
+  // Track when user crosses the 50-char threshold for the brief cyan flash
+  useEffect(() => {
+    if (meetsMinimum && previouslyUnderThreshold) {
+      setJustMetThreshold(true);
+      setPreviouslyUnderThreshold(false);
+      const timer = setTimeout(() => setJustMetThreshold(false), 600);
+      return () => clearTimeout(timer);
+    }
+    if (!meetsMinimum) {
+      setPreviouslyUnderThreshold(true);
+    }
+  }, [meetsMinimum, previouslyUnderThreshold]);
 
   const handleAssess = useCallback(async () => {
-    if (!description.trim()) return;
+    if (!canSubmit) return;
 
     setLoading(true);
     setError(null);
@@ -49,15 +70,14 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  }, [description]);
+  }, [description, canSubmit]);
 
   const handleReset = () => {
     setAssessment(null);
     setError(null);
     setDescription('');
+    setPreviouslyUnderThreshold(true);
   };
-
-  const canSubmit = description.trim().length > 0 && !loading;
 
   return (
     <div
@@ -146,7 +166,7 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* Textarea */}
+              {/* Textarea with character counter */}
               <div className="mb-8">
                 <label
                   className="block text-sm font-medium mb-3"
@@ -169,6 +189,20 @@ export default function HomePage() {
                     lineHeight: '1.6',
                   }}
                 />
+                {/* Character counter */}
+                <div
+                  className="flex justify-end mt-2 text-xs transition-colors duration-300"
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    color: justMetThreshold ? '#00C8FF' : '#555970',
+                  }}
+                >
+                  {meetsMinimum ? (
+                    <span>{charCount}</span>
+                  ) : (
+                    <span>{charCount} / {MIN_CHARS}</span>
+                  )}
+                </div>
               </div>
 
               {/* Error display */}
@@ -208,6 +242,7 @@ export default function HomePage() {
                     fontSize: '1rem',
                     fontWeight: 700,
                     color: canSubmit ? '#FFFFFF' : '#555970',
+                    opacity: canSubmit ? 1 : 0.4,
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
