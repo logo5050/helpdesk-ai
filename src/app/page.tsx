@@ -4,6 +4,18 @@ import { useState, useCallback } from 'react';
 import { CopyButton } from '@/components/ui';
 import type { SecurityAssessResponse } from '@/lib/types';
 
+// Clean up any residual markdown symbols from AI response
+function cleanMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove **bold**
+    .replace(/\*(.*?)\*/g, '$1')       // Remove *italic*
+    .replace(/^#{1,6}\s+/gm, '')       // Remove ## headings
+    .replace(/^---+$/gm, '')           // Remove horizontal rules
+    .replace(/`([^`]+)`/g, '$1')       // Remove inline code
+    .replace(/\n{3,}/g, '\n\n')        // Collapse multiple newlines
+    .trim();
+}
+
 export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,7 +147,7 @@ export default function HomePage() {
               </div>
 
               {/* Textarea */}
-              <div className="mb-6">
+              <div className="mb-8">
                 <label
                   className="block text-sm font-medium mb-3"
                   style={{ color: '#8B8FA3' }}
@@ -173,26 +185,68 @@ export default function HomePage() {
                 </div>
               )}
 
-              {/* Submit Button */}
-              <button
-                onClick={handleAssess}
-                disabled={!canSubmit}
-                className="w-full py-4 px-6 rounded-xl font-semibold text-white btn-gradient flex items-center justify-center gap-3"
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.9375rem',
-                }}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-                <span>Analyze Threat</span>
-              </button>
+              {/* Prominent Pill Button */}
+              <div className="flex justify-center">
+                <button
+                  onClick={handleAssess}
+                  disabled={!canSubmit}
+                  className="analyze-button"
+                  style={{
+                    minWidth: '220px',
+                    padding: '16px 32px',
+                    borderRadius: '9999px',
+                    background: canSubmit
+                      ? 'linear-gradient(135deg, #00C8FF 0%, #0099CC 100%)'
+                      : 'linear-gradient(135deg, #3A3F52 0%, #2A2E3D 100%)',
+                    boxShadow: canSubmit
+                      ? '0 0 30px rgba(0, 200, 255, 0.4), 0 0 60px rgba(0, 200, 255, 0.2), 0 4px 20px rgba(0, 0, 0, 0.3)'
+                      : 'none',
+                    border: 'none',
+                    cursor: canSubmit ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    color: canSubmit ? '#FFFFFF' : '#555970',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (canSubmit) {
+                      e.currentTarget.style.transform = 'scale(1.03)';
+                      e.currentTarget.style.boxShadow = '0 0 40px rgba(0, 200, 255, 0.5), 0 0 80px rgba(0, 200, 255, 0.3), 0 6px 24px rgba(0, 0, 0, 0.4)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    if (canSubmit) {
+                      e.currentTarget.style.boxShadow = '0 0 30px rgba(0, 200, 255, 0.4), 0 0 60px rgba(0, 200, 255, 0.2), 0 4px 20px rgba(0, 0, 0, 0.3)';
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    if (canSubmit) {
+                      e.currentTarget.style.transform = 'scale(0.97)';
+                    }
+                  }}
+                  onMouseUp={(e) => {
+                    if (canSubmit) {
+                      e.currentTarget.style.transform = 'scale(1.03)';
+                    }
+                  }}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  <span>Analyze Threat</span>
+                </button>
+              </div>
             </div>
 
             {/* Loading State */}
@@ -310,6 +364,9 @@ function ResultDisplay({
 
   const styles = getRiskStyles();
 
+  // Clean the assessment text of any markdown artifacts
+  const cleanedAssessment = cleanMarkdown(assessment.assessment);
+
   return (
     <div className="animate-fade-in">
       {/* Threat Level Header */}
@@ -382,8 +439,8 @@ function ResultDisplay({
           border: '1px solid rgba(255, 255, 255, 0.05)',
         }}
       >
-        <p className="text-sm leading-relaxed" style={{ color: '#8B8FA3' }}>
-          {assessment.assessment}
+        <p className="text-sm leading-relaxed" style={{ color: '#C8CAD0' }}>
+          {cleanedAssessment}
         </p>
       </div>
 
