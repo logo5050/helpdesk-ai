@@ -1,5 +1,3 @@
-export const runtime = 'edge';
-
 import { getSecurityAssessment, parseSecurityResponse } from '@/lib/claude';
 import type { SecurityAssessRequest } from '@/lib/types';
 
